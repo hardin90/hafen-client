@@ -38,13 +38,25 @@ public class Text {
     public static final Font fraktur = Resource.local().loadwait("ui/fraktur").layer(Resource.Font.class).font;
     public static final Font dfont = sans;
     public static final Foundry std;
+
+	public static final Font latin;
+
+	public static final Foundry num10Fnd;
+	public static final Foundry num11Fnd;
+
+
     public final BufferedImage img;
     public final String text;
     private Tex tex;
     public static final Color black = Color.BLACK;
     public static final Color white = Color.WHITE;
-	
+
     static {
+
+	latin = new Font("Dialog", Font.PLAIN, 10);
+	num10Fnd = new Foundry(latin);
+	num11Fnd = new Text.Foundry(latin, 11);
+
 	std = new Foundry(sans, 10);
     }
 	
@@ -178,6 +190,29 @@ public class Text {
 	    g.dispose();
 	    return(new Line(text, img, m));
 	}
+
+		public Line renderstroked(String text, Color c, Color stroke) {
+			Coord sz = strsize(text);
+			if (sz.x < 1)
+				sz = sz.add(1, 0);
+			sz = sz.add(2, 0);
+			BufferedImage img = TexI.mkbuf(sz);
+			Graphics g = img.createGraphics();
+			if (aa)
+				Utils.AA(g);
+			g.setFont(font);
+			FontMetrics m = g.getFontMetrics();
+			g.setColor(stroke);
+			g.drawString(text, 0, m.getAscent());
+			g.drawString(text, 2, m.getAscent());
+			g.drawString(text, 1, m.getAscent() - 1);
+			g.drawString(text,1, m.getAscent() + 1);
+			g.setColor(c);
+			g.drawString(text, 1, m.getAscent());
+			g.dispose();
+			return (new Line(text, img, m));
+		}
+
 		
 	public Line render(String text) {
 	    return(render(text, defcol));
@@ -267,6 +302,14 @@ public class Text {
     public static Line render(String text) {
 	return(render(text, Color.WHITE));
     }
+
+	public static Line renderstroked(String text, Color c, Color stroke) {
+		return (renderstroked(text, c, stroke, num11Fnd));
+	}
+
+	public static Line renderstroked(String text, Color c, Color stroke, Foundry foundry) {
+		return (foundry.renderstroked(text, c, stroke));
+	}
 	
     public Tex tex() {
 	if(tex == null)

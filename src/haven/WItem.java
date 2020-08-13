@@ -34,6 +34,8 @@ import java.util.function.*;
 import haven.ItemInfo.AttrCache;
 import static haven.ItemInfo.find;
 import static haven.Inventory.sqsz;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class WItem extends Widget implements DTarget {
     public static final Resource missing = Resource.local().loadwait("gfx/invobjs/missing");
@@ -196,29 +198,71 @@ public class WItem extends Widget implements DTarget {
 	}
     }
 
-    public boolean mousedown(Coord c, int btn) {
-	if(btn == 1) {
+//    public boolean mousedown(Coord c, int btn) {
+//	if(btn == 1) {
+//		if (ui.modctrl && ui.modmeta)
+//			wdgmsg("drop-identical", item.resource().name);
+//	    else if(ui.modshift) {
+//		int n = ui.modctrl ? -1 : 1;
+//		item.wdgmsg("transfer", c, n);
+//	    } else if(ui.modctrl) {
+//		int n = ui.modmeta ? -1 : 1;
+//		item.wdgmsg("drop", c, n);
+//	    } else {
+//		item.wdgmsg("take", c);
+//	    }
+//	    return(true);
+//	} else if(btn == 3) {
+//		if (ui.modshift)
+//			wdgmsg("transfer-identical", item.resource().name);
+//		else
+//			item.wdgmsg("iact", c, ui.modflags());
+//	    return(true);
+//	}
+//	return(false);
+//    }
+public boolean mousedown(Coord c, int btn) {
+	if (btn == 1) {
 		if (ui.modctrl && ui.modmeta)
-			wdgmsg("drop-identical", item.resource().name);
-	    else if(ui.modshift) {
-		int n = ui.modctrl ? -1 : 1;
-		item.wdgmsg("transfer", c, n);
-	    } else if(ui.modctrl) {
-		int n = ui.modmeta ? -1 : 1;
-		item.wdgmsg("drop", c, n);
-	    } else {
-		item.wdgmsg("take", c);
-	    }
-	    return(true);
-	} else if(btn == 3) {
-		if (ui.modshift)
-			wdgmsg("transfer-identical", item.resource().name);
+			wdgmsg("drop-identical", this.item);
+		else if (ui.modctrl && ui.modshift) {
+			String name = ItemInfo.find(ItemInfo.Name.class, item.info()).str.text;
+			name = name.replace(' ', '_');
+			if (!Resource.language.equals("en")) {
+				int i = name.indexOf('(');
+				if (i > 0)
+					name = name.substring(i + 1, name.length() - 1);
+			}
+			try {
+				WebBrowser.self.show(new URL(String.format("http://ringofbrodgar.com/wiki/%s", name)));
+			} catch (MalformedURLException e) {
+			} catch (Exception e) {
+				getparent(GameUI.class).error("Could not launch web browser.");
+			}
+		}
+		else if (ui.modshift && !ui.modmeta) {
+			// server side transfer all identical: pass third argument -1 (or 1 for single item)
+			item.wdgmsg("transfer", c);
+		} else if (ui.modctrl)
+			item.wdgmsg("drop", c);
+		else if (ui.modmeta)
+			wdgmsg("transfer-identical", this.item);
+		else
+			item.wdgmsg("take", c);
+		return (true);
+	} else if (btn == 2) {
+		if (ui.modmeta)
+			wdgmsg("transfer-identical-eq", this.item);
+		return (true);
+	} else if (btn == 3) {
+		if (ui.modmeta && !(parent instanceof Equipory))
+			wdgmsg("transfer-identical-asc", this.item);
 		else
 			item.wdgmsg("iact", c, ui.modflags());
-	    return(true);
+		return (true);
 	}
-	return(false);
-    }
+	return (false);
+}
 
     public boolean drop(Coord cc, Coord ul) {
 	return(false);

@@ -26,6 +26,7 @@
 
 package haven;
 
+import java.lang.reflect.Field;
 import java.util.*;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.Constructor;
@@ -100,4 +101,16 @@ public abstract class GSprite implements Drawn {
 
     public void tick(double dt) {
     }
+
+	public String getname() {
+		Class cl = this.getClass();
+		try {
+			Field name = cl.getDeclaredField("name");
+			return (String)name.get(this);
+		} catch (NoSuchFieldException nsfe) {
+		} catch (ClassCastException cce) {
+		} catch (IllegalAccessException iae) {
+		}
+		return null;
+	}
 }

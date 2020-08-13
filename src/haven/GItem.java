@@ -30,6 +30,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.util.*;
+import haven.res.ui.tt.q.qbuff.QBuff;
 
 public class GItem extends AWidget implements ItemInfo.SpriteOwner, GSprite.Owner {
     public Indir<Resource> res;
@@ -39,6 +40,10 @@ public class GItem extends AWidget implements ItemInfo.SpriteOwner, GSprite.Owne
     private GSprite spr;
     private ItemInfo.Raw rawinfo;
     private List<ItemInfo> info = Collections.emptyList();
+	private QBuff quality;
+	public Tex metertex;
+	public double studytime = 0.0;
+	private boolean postProcessed = false;
 
     @RName("item")
     public static class $_ implements Factory {
@@ -184,4 +189,29 @@ public class GItem extends AWidget implements ItemInfo.SpriteOwner, GSprite.Owne
 	    meter = (int)((Number)args[0]).doubleValue();
 	}
     }
+
+	public void qualitycalc(List<ItemInfo> infolist) {
+		for (ItemInfo info : infolist) {
+			if (info instanceof QBuff) {
+				this.quality = (QBuff) info;
+				break;
+			}
+		}
+	}
+
+	public QBuff quality() {
+		if (quality == null) {
+			try {
+				for (ItemInfo info : info()) {
+					if (info instanceof ItemInfo.Contents) {
+						qualitycalc(((ItemInfo.Contents) info).sub);
+						return quality;
+					}
+				}
+				qualitycalc(info());
+			} catch (Loading l) {
+			}
+		}
+		return quality;
+	}
 }

@@ -1728,4 +1728,10 @@ public class Utils {
 		}
 	    });
     }
+
+	// NOTE: will not work with values having large integer part
+	public static String fmt1DecPlace(double value) {
+		double rvalue = (double) Math.round(value * 10) / 10;
+		return (rvalue % 1 == 0) ? Integer.toString((int)rvalue) : Double.toString(rvalue);
+	}
 }

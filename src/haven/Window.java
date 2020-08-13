@@ -71,6 +71,7 @@ public class Window extends Widget implements DTarget {
     public final IButton cbtn;
     public boolean dt = false;
     public Text cap;
+	public final String origcap;
     public Coord wsz, ctl, csz, atl, asz, cptl, cpsz;
     public int cmw;
     private UI.Grab dm = null;
@@ -90,6 +91,7 @@ public class Window extends Widget implements DTarget {
 	this.tlo = tlo;
 	this.rbo = rbo;
 	this.mrgn = lg?dlmrgn:dsmrgn;
+	origcap = cap;
 	cbtn = add(new IButton(cbtni[0], cbtni[1], cbtni[2]));
 	chcap(cap);
 	resize2(sz);

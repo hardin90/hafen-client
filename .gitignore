@@ -1,4 +1,7 @@
 /.classpath
 /.project
 /build
+/.idea
 *~
+
+hafen-client.iml
