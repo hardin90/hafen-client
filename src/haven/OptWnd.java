@@ -46,7 +46,7 @@ public class OptWnd extends Window {
 	public static final int VERTICAL_MARGIN = 10;
 	public static final int HORIZONTAL_MARGIN = 5;
 	public static final int VERTICAL_AUDIO_MARGIN = 5;
-	public final Panel main, video, audio, display, map, general, combat, control, mapping, uis, quality, flowermenus, soundalarms, keybind;
+	public final Panel main, video, audio, display, map, general, combat, control, mapping, uis, quality, flowermenus, soundalarms, keybind, graphic;
 	public Panel current;
 
     public void chpanel(Panel p) {
@@ -455,85 +455,8 @@ public class OptWnd extends Window {
 	flowermenus = add(new Panel());
 	soundalarms = add(new Panel());
 	keybind = add(new Panel());
-//	keybind = add(new BindingPanel(main));
+	graphic = add(new GraphicPanel(main));
 
-//	int y;
-//	main.add(new PButton(200, "Video settings", 'v', video), new Coord(0, 0));
-//	main.add(new PButton(200, "Audio settings", 'a', audio), new Coord(0, 30));
-//	main.add(new PButton(200, "Keybindings", 'k', keybind), new Coord(0, 60));
-//	main.add(new PButton(200, "Display settings", 'd', display), new Coord(0, 90));
-//	if(gopts) {
-//	    main.add(new Button(200, "Switch character") {
-//		    public void click() {
-//			getparent(GameUI.class).act("lo", "cs");
-//		    }
-//		}, new Coord(0, 120));
-//	    main.add(new Button(200, "Log out") {
-//		    public void click() {
-//			getparent(GameUI.class).act("lo");
-//		    }
-//		}, new Coord(0, 150));
-//	}
-//	main.add(new Button(200, "Close") {
-//		public void click() {
-//		    OptWnd.this.hide();
-//		}
-//	    }, new Coord(0, 180));
-//	main.pack();
-//
-//	y = 0;
-//	audio.add(new Label("Master audio volume"), new Coord(0, y));
-//	y += 15;
-//	audio.add(new HSlider(200, 0, 1000, (int)(Audio.volume * 1000)) {
-//		public void changed() {
-//		    Audio.setvolume(val / 1000.0);
-//		}
-//	    }, new Coord(0, y));
-//	y += 30;
-//	audio.add(new Label("In-game event volume"), new Coord(0, y));
-//	y += 15;
-//	audio.add(new HSlider(200, 0, 1000, 0) {
-//		protected void attach(UI ui) {
-//		    super.attach(ui);
-//		    val = (int)(ui.audio.pos.volume * 1000);
-//		}
-//		public void changed() {
-//		    ui.audio.pos.setvolume(val / 1000.0);
-//		}
-//	    }, new Coord(0, y));
-//	y += 20;
-//	audio.add(new Label("Ambient volume"), new Coord(0, y));
-//	y += 15;
-//	audio.add(new HSlider(200, 0, 1000, 0) {
-//		protected void attach(UI ui) {
-//		    super.attach(ui);
-//		    val = (int)(ui.audio.amb.volume * 1000);
-//		}
-//		public void changed() {
-//		    ui.audio.amb.setvolume(val / 1000.0);
-//		}
-//	    }, new Coord(0, y));
-//	y += 35;
-//	audio.add(new PButton(200, "Back", 27, main), new Coord(0, 180));
-//	audio.pack();
-//
-//	// -------------------------------------------- display
-//	y = 0;
-//	display.add(new CheckBox("Show flavor objects") {
-//		{a = Utils.getprefb("showflo", true);}
-//
-//		public void set(boolean val) {
-//			if (val) {
-//				Utils.setprefb("showflo", true);
-//			} else {
-//				Utils.setprefb("showflo", false);
-//			}
-//			a = val;
-//		}
-//	}, new Coord(0, y));
-//
-//	display.add(new PButton(200, "Back", 27, main), new Coord(0, 180));
-//	display.pack();
 	initMain(gopts);
 	initAudio();
 	initDisplay();
@@ -551,10 +474,11 @@ public class OptWnd extends Window {
     }
 
 	private void initMain(boolean gopts) {
-		main.add(new PButton(200, "Video settings", 'v', video), new Coord(0, 0));
-		main.add(new PButton(200, "Audio settings", 'a', audio), new Coord(0, 30));
-		main.add(new PButton(200, "Display settings", 'd', display), new Coord(0, 60));
-		main.add(new PButton(200, "Minimap settings", 'm', map), new Coord(0, 90));
+		main.add(new PButton(200, "Graphic Settings", 'i', graphic), new Coord(0, 0));
+		main.add(new PButton(200, "Video settings", 'v', video), new Coord(0, 30));
+		main.add(new PButton(200, "Audio settings", 'a', audio), new Coord(0, 60));
+		main.add(new PButton(200, "Display settings", 'd', display), new Coord(0, 90));
+		main.add(new PButton(200, "Minimap settings", 'm', map), new Coord(0, 120));
 		main.add(new PButton(200, "General settings", 'g', general), new Coord(210, 0));
 		main.add(new PButton(200, "Combat settings", 'c', combat), new Coord(210, 30));
 		main.add(new PButton(200, "Control settings", 'k', control), new Coord(210, 60));
@@ -590,6 +514,232 @@ public class OptWnd extends Window {
 			}
 		}, new Coord(210, 360));
 		main.pack();
+	}
+
+	public class GraphicPanel extends Panel {
+		public GraphicPanel(Panel back) {
+			super();
+			add(new PButton(200, "Back", 27, back), new Coord(0, 310));
+			pack();
+		}
+
+		public class CPanel extends Widget {
+			public GSettings prefs;
+
+			public CPanel(GSettings gprefs) {
+				this.prefs = gprefs;
+				int y = 0;
+				add(new CheckBox("Render shadows") {
+					{a = prefs.lshadow.val;}
+
+					public void set(boolean val) {
+						try {
+							GSettings np = prefs.update(null, prefs.lshadow, val);
+							ui.setgprefs(prefs = np);
+						} catch(GSettings.SettingException e) {
+							error(e.getMessage());
+							return;
+						}
+						a = val;
+					}
+				}, new Coord(0, y));
+				y += 20;
+				add(new Label("Render scale"), new Coord(0, y));
+				{
+					Label dpy = add(new Label(""), new Coord(165, y + 15));
+					final int steps = 4;
+					add(new HSlider(160, -2 * steps, 2 * steps, (int)Math.round(steps * Math.log(prefs.rscale.val) / Math.log(2.0f))) {
+						protected void added() {
+							dpy();
+							this.c.y = dpy.c.y + ((dpy.sz.y - this.sz.y) / 2);
+						}
+						void dpy() {
+							dpy.settext(String.format("%.2f\u00d7", Math.pow(2, this.val / (double)steps)));
+						}
+						public void changed() {
+							try {
+								float val = (float)Math.pow(2, this.val / (double)steps);
+								ui.setgprefs(prefs = prefs.update(null, prefs.rscale, val));
+							} catch(GSettings.SettingException e) {
+								error(e.getMessage());
+								return;
+							}
+							dpy();
+						}
+					}, new Coord(0, y + 15));
+				}
+				y += 45;
+				add(new CheckBox("Vertical sync") {
+					{a = prefs.vsync.val;}
+
+					public void set(boolean val) {
+						try {
+							GSettings np = prefs.update(null, prefs.vsync, val);
+							ui.setgprefs(prefs = np);
+						} catch(GSettings.SettingException e) {
+							error(e.getMessage());
+							return;
+						}
+						a = val;
+					}
+				}, new Coord(0, y));
+				y += 20;
+				add(new Label("Framerate limit (active window)"), new Coord(0, y));
+				{
+					Label dpy = add(new Label(""), new Coord(165, y + 15));
+					final int max = 250;
+					add(new HSlider(160, 1, max, (prefs.hz.val == Float.POSITIVE_INFINITY) ? max : prefs.hz.val.intValue()) {
+						protected void added() {
+							dpy();
+							this.c.y = dpy.c.y + ((dpy.sz.y - this.sz.y) / 2);
+						}
+						void dpy() {
+							if(this.val == max)
+								dpy.settext("None");
+							else
+								dpy.settext(Integer.toString(this.val));
+						}
+						public void changed() {
+							try {
+								if(this.val > 10)
+									this.val = (this.val / 2) * 2;
+								float val = (this.val == max) ? Float.POSITIVE_INFINITY : this.val;
+								ui.setgprefs(prefs = prefs.update(null, prefs.hz, val));
+							} catch(GSettings.SettingException e) {
+								error(e.getMessage());
+								return;
+							}
+							dpy();
+						}
+					}, new Coord(0, y + 15));
+				}
+				y += 35;
+				add(new Label("Framerate limit (background window)"), new Coord(0, y));
+				{
+					Label dpy = add(new Label(""), new Coord(165, y + 15));
+					final int max = 250;
+					add(new HSlider(160, 1, max, (prefs.bghz.val == Float.POSITIVE_INFINITY) ? max : prefs.bghz.val.intValue()) {
+						protected void added() {
+							dpy();
+							this.c.y = dpy.c.y + ((dpy.sz.y - this.sz.y) / 2);
+						}
+						void dpy() {
+							if(this.val == max)
+								dpy.settext("None");
+							else
+								dpy.settext(Integer.toString(this.val));
+						}
+						public void changed() {
+							try {
+								if(this.val > 10)
+									this.val = (this.val / 2) * 2;
+								float val = (this.val == max) ? Float.POSITIVE_INFINITY : this.val;
+								ui.setgprefs(prefs = prefs.update(null, prefs.bghz, val));
+							} catch(GSettings.SettingException e) {
+								error(e.getMessage());
+								return;
+							}
+							dpy();
+						}
+					}, new Coord(0, y + 15));
+				}
+				y += 35;
+				add(new Label("Frame sync mode"), new Coord(0, y));
+				y += 15;
+				{
+					boolean[] done = {false};
+					RadioGroup grp = new RadioGroup(this) {
+						public void changed(int btn, String lbl) {
+							if(!done[0])
+								return;
+							try {
+								ui.setgprefs(prefs = prefs.update(null, prefs.syncmode, JOGLPanel.SyncMode.values()[btn]));
+							} catch(GSettings.SettingException e) {
+								error(e.getMessage());
+								return;
+							}
+						}
+					};
+					Widget prev;
+					prev = add(new Label("\u2191 Better performance, worse latency"), new Coord(5, y));
+					y += prev.sz.y + 2;
+					prev = grp.add("One-frame overlap", new Coord(5, y));
+					y += prev.sz.y + 2;
+					prev = grp.add("Tick overlap", new Coord(5, y));
+					y += prev.sz.y + 2;
+					prev = grp.add("CPU-sequential", new Coord(5, y));
+					y += prev.sz.y + 2;
+					prev = grp.add("GPU-sequential", new Coord(5, y));
+					y += prev.sz.y + 2;
+					prev = add(new Label("\u2193 Worse performance, better latency"), new Coord(5, y));
+					y += prev.sz.y + 2;
+					grp.check(prefs.syncmode.val.ordinal());
+					done[0] = true;
+				}
+		/* XXXRENDER
+		add(new CheckBox("Antialiasing") {
+			{a = cf.fsaa.val;}
+			public void set(boolean val) {
+			    try {
+				cf.fsaa.set(val);
+			    } catch(GLSettings.SettingException e) {
+				error(e.getMessage());
+				return;
+			    }
+			    a = val;
+			    cf.dirty = true;
+			}
+		    }, new Coord(0, y));
+		y += 25;
+		add(new Label("Anisotropic filtering"), new Coord(0, y));
+		if(cf.anisotex.max() <= 1) {
+		    add(new Label("(Not supported)"), new Coord(15, y + 15));
+		} else {
+		    final Label dpy = add(new Label(""), new Coord(165, y + 15));
+		    add(new HSlider(160, (int)(cf.anisotex.min() * 2), (int)(cf.anisotex.max() * 2), (int)(cf.anisotex.val * 2)) {
+			    protected void added() {
+				dpy();
+				this.c.y = dpy.c.y + ((dpy.sz.y - this.sz.y) / 2);
+			    }
+			    void dpy() {
+				if(val < 2)
+				    dpy.settext("Off");
+				else
+				    dpy.settext(String.format("%.1f\u00d7", (val / 2.0)));
+			    }
+			    public void changed() {
+				try {
+				    cf.anisotex.set(val / 2.0f);
+				} catch(GLSettings.SettingException e) {
+				    error(e.getMessage());
+				    return;
+				}
+				dpy();
+				cf.dirty = true;
+			    }
+			}, new Coord(0, y + 15));
+		}
+		*/
+				add(new Button(200, "Reset to defaults") {
+					public void click() {
+						ui.setgprefs(GSettings.defaults());
+						curcf.destroy();
+						curcf = null;
+					}
+				}, new Coord(0, 280));
+				pack();
+			}
+		}
+
+		private CPanel curcf = null;
+		public void draw(GOut g) {
+			if((curcf == null) || (ui.gprefs != curcf.prefs)) {
+				if(curcf != null)
+					curcf.destroy();
+				curcf = add(new CPanel(ui.gprefs), Coord.z);
+			}
+			super.draw(g);
+		}
 	}
 
 	private void initAudio() {
