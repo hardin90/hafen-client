@@ -67,6 +67,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
     public Belt beltwdg;
     public final Map<Integer, String> polowners = new HashMap<Integer, String>();
     public Bufflist buffs;
+//	public QuickSlotsWdg quickslots;
 
     private static final OwnerContext.ClassResolver<BeltSlot> beltctxr = new OwnerContext.ClassResolver<BeltSlot>()
 	.add(Glob.class, slot -> slot.wdg().ui.sess.glob)
@@ -187,6 +188,12 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	opts.hide();
 	zerg = add(new Zergwnd(), Utils.getprefc("wndc-zerg", new Coord(187, 50)));
 	zerg.hide();
+
+//	quickslots = new QuickSlotsWdg();
+//	if (!Config.quickslots)
+//		quickslots.hide();
+////	 add(quickslots, Utils.getprefc("quickslotsc", new Coord(430, HavenPanel.h - 160)));
+//	add(quickslots, Utils.getprefc("quickslotsc", new Coord(430, JOGLPanel.h - 160)));
     }
 
     public static final KeyBinding kb_map = KeyBinding.get("map", KeyMatch.forchar('A', KeyMatch.C));
@@ -1091,8 +1098,6 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	}
     }
 
-    public static final KeyBinding kb_shoot = KeyBinding.get("screenshot", KeyMatch.forchar('S', KeyMatch.M));
-    public static final KeyBinding kb_chat = KeyBinding.get("chat-toggle", KeyMatch.forchar('C', KeyMatch.C));
     public static final KeyBinding kb_hide = KeyBinding.get("ui-toggle", KeyMatch.nil);
     public boolean globtype(char key, KeyEvent ev) {
 	if(key == ':') {
@@ -1503,4 +1508,9 @@ public class GameUI extends ConsoleHost implements Console.Directory {
     public Map<String, Console.Command> findcmds() {
 	return(cmdmap);
     }
+
+	public static final KeyBinding kb_shoot = KeyBinding.get("screenshot", KeyMatch.forchar('S', KeyMatch.M));
+	public static final KeyBinding kb_shoot_save = KeyBinding.get("screenshot-save", KeyMatch.forchar('S', KeyMatch.C));
+	public static final KeyBinding kb_chat = KeyBinding.get("chat-toggle", KeyMatch.forchar('C', KeyMatch.C));
+	public static final KeyBinding kb_drink = KeyBinding.get("drink", KeyMatch.forchar('`', 0));
 }

@@ -26,6 +26,9 @@
 
 package haven;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.awt.RenderingHints;
 import java.io.*;
 import java.nio.*;
@@ -236,6 +239,25 @@ public class Utils {
 			if (jsonarr.length() > 0)
 				jsonarr = jsonarr.substring(0, jsonarr.length() - 1);
 			Utils.setpref(prefname, "[" + jsonarr + "]");
+		} catch (SecurityException e) {
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+
+	static void loadprefchklist(String prefname, Map<String, CheckListboxItem> data) {
+		try {
+			String jsonstr = Utils.getpref(prefname, null);
+			if (jsonstr == null)
+				return;
+			JSONArray ja = new JSONArray(jsonstr);
+			for (CheckListboxItem itm : data.values())
+				itm.selected = false;
+			for (int i = 0; i < ja.length(); i++) {
+				CheckListboxItem itm = data.get(ja.getString(i));
+				if (itm != null)
+					itm.selected = true;
+			}
 		} catch (SecurityException e) {
 		} catch (Exception ex) {
 			ex.printStackTrace();

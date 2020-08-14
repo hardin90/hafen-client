@@ -437,4 +437,6 @@ public class Fightsess extends Widget {
 	}
 	return(false);
     }
+
+	public static final KeyBinding kb_switch = KeyBinding.get("switch_opp", KeyMatch.forcode(KeyEvent.VK_TAB, KeyMatch.C));
 }
