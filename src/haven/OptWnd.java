@@ -29,10 +29,15 @@ package haven;
 import java.awt.event.KeyEvent;
 import java.util.*;
 import java.awt.font.TextAttribute;
+import java.awt.*;
 
 public class OptWnd extends Window {
-    public final Panel main, video, audio, keybind, display;
-    public Panel current;
+	private static final Text.Foundry sectionfndr = new Text.Foundry(Text.dfont.deriveFont(Font.BOLD, Text.cfg.label));
+	public static final int VERTICAL_MARGIN = 10;
+	public static final int HORIZONTAL_MARGIN = 5;
+	public static final int VERTICAL_AUDIO_MARGIN = 5;
+	public final Panel main, video, audio, display, map, general, combat, control, mapping, uis, quality, flowermenus, soundalarms, keybind;
+	public Panel current;
 
     public void chpanel(Panel p) {
 	Coord cc = this.c.add(this.sz.div(2));
@@ -73,237 +78,170 @@ public class OptWnd extends Window {
 	}
     }
 
-    private void error(String msg) {
+	public class VideoPanel extends Panel {
+		public VideoPanel(Panel back) {
+			super();
+			add(new PButton(200, "Back", 27, back), new Coord(210, 360));
+			resize(new Coord(620, 400));
+		}
+
+		public class CPanel extends Widget {
+			public GSettings prefs;
+
+			public CPanel(GSettings gprefs) {
+				this.prefs = gprefs;
+				final WidgetVerticalAppender appender = new WidgetVerticalAppender(withScrollport(this, new Coord(620, 350)));
+				appender.setVerticalMargin(VERTICAL_MARGIN);
+				appender.setHorizontalMargin(HORIZONTAL_MARGIN);
+
+				appender.add(new CheckBox("Disable biome tile transitions (requires logout)") {
+					{
+						a = Config.disabletiletrans;
+					}
+					public void set(boolean val) {
+						Config.disabletiletrans = val;
+						Utils.setprefb("disabletiletrans", val);
+						a = val;
+					}
+				});
+				appender.add(new CheckBox("Disable terrain smoothing (requires logout)") {
+					{
+						a = Config.disableterrainsmooth;
+					}
+					public void set(boolean val) {
+						Config.disableterrainsmooth = val;
+						Utils.setprefb("disableterrainsmooth", val);
+						a = val;
+					}
+				});
+				appender.add(new CheckBox("Disable terrain elevation (requires logout)") {
+					{
+						a = Config.disableelev;
+					}
+					public void set(boolean val) {
+						Config.disableelev = val;
+						Utils.setprefb("disableelev", val);
+						a = val;
+					}
+				});
+				appender.add(new CheckBox("Disable flavor objects including ambient sounds") {
+					{
+						a = Config.hideflocomplete;
+					}
+
+					public void set(boolean val) {
+						Utils.setprefb("hideflocomplete", val);
+						Config.hideflocomplete = val;
+						a = val;
+					}
+				});
+				appender.add(new CheckBox("Hide flavor objects but keep sounds (requires logout)") {
+					{
+						a = Config.hideflovisual;
+					}
+
+					public void set(boolean val) {
+						Utils.setprefb("hideflovisual", val);
+						Config.hideflovisual = val;
+						a = val;
+					}
+				});
+				appender.add(new CheckBox("Show weather") {
+					{
+						a = Config.showweather;
+					}
+
+					public void set(boolean val) {
+						Utils.setprefb("showweather", val);
+						Config.showweather = val;
+						a = val;
+					}
+				});
+				appender.add(new CheckBox("Simple crops (req. logout)") {
+					{
+						a = Config.simplecrops;
+					}
+
+					public void set(boolean val) {
+						Utils.setprefb("simplecrops", val);
+						Config.simplecrops = val;
+						a = val;
+					}
+				});
+				appender.add(new CheckBox("Hide crops") {
+					{
+						a = Config.hidecrops;
+					}
+
+					public void set(boolean val) {
+						Utils.setprefb("hidecrops", val);
+						Config.hidecrops = val;
+						a = val;
+					}
+				});
+				appender.add(new CheckBox("smooth snow in minimap") {
+					{
+						a = Config.minimapsmooth;
+					}
+
+					public void set(boolean val) {
+						Utils.setprefb("minimapsmooth", val);
+						Config.minimapsmooth = val;
+						a = val;
+					}
+				});
+				appender.add(new CheckBox("Show FPS") {
+					{
+						a = Config.showfps;
+					}
+
+					public void set(boolean val) {
+						Utils.setprefb("showfps", val);
+						Config.showfps = val;
+						a = val;
+					}
+				});
+				appender.add(new Label("Disable animations (req. restart):"));
+				CheckListbox disanimlist = new CheckListbox(320, Math.min(8, Config.disableanim.values().size()), 18 + Config.fontadd) {
+					@Override
+					protected void itemclick(CheckListboxItem itm, int button) {
+						super.itemclick(itm, button);
+						Utils.setprefchklst("disableanim", Config.disableanim);
+					}
+				};
+				for (CheckListboxItem itm : Config.disableanim.values())
+					disanimlist.items.add(itm);
+				appender.add(disanimlist);
+
+				add(new Button(200, "Reset to defaults") {
+					public void click() {
+						ui.setgprefs(GSettings.defaults());
+						curcf.destroy();
+						curcf = null;
+					}
+				}, new Coord(0, 280));
+
+				pack();
+			}
+		}
+
+		private CPanel curcf = null;
+
+		public void draw(GOut g) {
+			if ((curcf == null) || (ui.gprefs != curcf.prefs)) {
+				if (curcf != null)
+					curcf.destroy();
+				curcf = add(new CPanel(ui.gprefs), Coord.z);
+			}
+			super.draw(g);
+		}
+	}
+
+
+	private void error(String msg) {
 	GameUI gui = getparent(GameUI.class);
 	if(gui != null)
 	    gui.error(msg);
-    }
-
-    public class VideoPanel extends Panel {
-	public VideoPanel(Panel back) {
-	    super();
-	    add(new PButton(200, "Back", 27, back), new Coord(0, 310));
-	    pack();
-	}
-
-	public class CPanel extends Widget {
-	    public GSettings prefs;
-
-	    public CPanel(GSettings gprefs) {
-		this.prefs = gprefs;
-		int y = 0;
-		add(new CheckBox("Render shadows") {
-			{a = prefs.lshadow.val;}
-
-			public void set(boolean val) {
-			    try {
-				GSettings np = prefs.update(null, prefs.lshadow, val);
-				ui.setgprefs(prefs = np);
-			    } catch(GSettings.SettingException e) {
-				error(e.getMessage());
-				return;
-			    }
-			    a = val;
-			}
-		    }, new Coord(0, y));
-		y += 20;
-		add(new Label("Render scale"), new Coord(0, y));
-		{
-		    Label dpy = add(new Label(""), new Coord(165, y + 15));
-		    final int steps = 4;
-		    add(new HSlider(160, -2 * steps, 2 * steps, (int)Math.round(steps * Math.log(prefs.rscale.val) / Math.log(2.0f))) {
-			    protected void added() {
-				dpy();
-				this.c.y = dpy.c.y + ((dpy.sz.y - this.sz.y) / 2);
-			    }
-			    void dpy() {
-				dpy.settext(String.format("%.2f\u00d7", Math.pow(2, this.val / (double)steps)));
-			    }
-			    public void changed() {
-				try {
-				    float val = (float)Math.pow(2, this.val / (double)steps);
-				    ui.setgprefs(prefs = prefs.update(null, prefs.rscale, val));
-				} catch(GSettings.SettingException e) {
-				    error(e.getMessage());
-				    return;
-				}
-				dpy();
-			    }
-			}, new Coord(0, y + 15));
-		}
-		y += 45;
-		add(new CheckBox("Vertical sync") {
-			{a = prefs.vsync.val;}
-
-			public void set(boolean val) {
-			    try {
-				GSettings np = prefs.update(null, prefs.vsync, val);
-				ui.setgprefs(prefs = np);
-			    } catch(GSettings.SettingException e) {
-				error(e.getMessage());
-				return;
-			    }
-			    a = val;
-			}
-		    }, new Coord(0, y));
-		y += 20;
-		add(new Label("Framerate limit (active window)"), new Coord(0, y));
-		{
-		    Label dpy = add(new Label(""), new Coord(165, y + 15));
-		    final int max = 250;
-		    add(new HSlider(160, 1, max, (prefs.hz.val == Float.POSITIVE_INFINITY) ? max : prefs.hz.val.intValue()) {
-			    protected void added() {
-				dpy();
-				this.c.y = dpy.c.y + ((dpy.sz.y - this.sz.y) / 2);
-			    }
-			    void dpy() {
-				if(this.val == max)
-				    dpy.settext("None");
-				else
-				    dpy.settext(Integer.toString(this.val));
-			    }
-			    public void changed() {
-				try {
-				    if(this.val > 10)
-					this.val = (this.val / 2) * 2;
-				    float val = (this.val == max) ? Float.POSITIVE_INFINITY : this.val;
-				    ui.setgprefs(prefs = prefs.update(null, prefs.hz, val));
-				} catch(GSettings.SettingException e) {
-				    error(e.getMessage());
-				    return;
-				}
-				dpy();
-			    }
-			}, new Coord(0, y + 15));
-		}
-		y += 35;
-		add(new Label("Framerate limit (background window)"), new Coord(0, y));
-		{
-		    Label dpy = add(new Label(""), new Coord(165, y + 15));
-		    final int max = 250;
-		    add(new HSlider(160, 1, max, (prefs.bghz.val == Float.POSITIVE_INFINITY) ? max : prefs.bghz.val.intValue()) {
-			    protected void added() {
-				dpy();
-				this.c.y = dpy.c.y + ((dpy.sz.y - this.sz.y) / 2);
-			    }
-			    void dpy() {
-				if(this.val == max)
-				    dpy.settext("None");
-				else
-				    dpy.settext(Integer.toString(this.val));
-			    }
-			    public void changed() {
-				try {
-				    if(this.val > 10)
-					this.val = (this.val / 2) * 2;
-				    float val = (this.val == max) ? Float.POSITIVE_INFINITY : this.val;
-				    ui.setgprefs(prefs = prefs.update(null, prefs.bghz, val));
-				} catch(GSettings.SettingException e) {
-				    error(e.getMessage());
-				    return;
-				}
-				dpy();
-			    }
-			}, new Coord(0, y + 15));
-		}
-		y += 35;
-		add(new Label("Frame sync mode"), new Coord(0, y));
-		y += 15;
-		{
-		    boolean[] done = {false};
-		    RadioGroup grp = new RadioGroup(this) {
-			    public void changed(int btn, String lbl) {
-				if(!done[0])
-				    return;
-				try {
-				    ui.setgprefs(prefs = prefs.update(null, prefs.syncmode, JOGLPanel.SyncMode.values()[btn]));
-				} catch(GSettings.SettingException e) {
-				    error(e.getMessage());
-				    return;
-				}
-			    }
-			};
-		    Widget prev;
-		    prev = add(new Label("\u2191 Better performance, worse latency"), new Coord(5, y));
-		    y += prev.sz.y + 2;
-		    prev = grp.add("One-frame overlap", new Coord(5, y));
-		    y += prev.sz.y + 2;
-		    prev = grp.add("Tick overlap", new Coord(5, y));
-		    y += prev.sz.y + 2;
-		    prev = grp.add("CPU-sequential", new Coord(5, y));
-		    y += prev.sz.y + 2;
-		    prev = grp.add("GPU-sequential", new Coord(5, y));
-		    y += prev.sz.y + 2;
-		    prev = add(new Label("\u2193 Worse performance, better latency"), new Coord(5, y));
-		    y += prev.sz.y + 2;
-		    grp.check(prefs.syncmode.val.ordinal());
-		    done[0] = true;
-		}
-		/* XXXRENDER
-		add(new CheckBox("Antialiasing") {
-			{a = cf.fsaa.val;}
-
-			public void set(boolean val) {
-			    try {
-				cf.fsaa.set(val);
-			    } catch(GLSettings.SettingException e) {
-				error(e.getMessage());
-				return;
-			    }
-			    a = val;
-			    cf.dirty = true;
-			}
-		    }, new Coord(0, y));
-		y += 25;
-		add(new Label("Anisotropic filtering"), new Coord(0, y));
-		if(cf.anisotex.max() <= 1) {
-		    add(new Label("(Not supported)"), new Coord(15, y + 15));
-		} else {
-		    final Label dpy = add(new Label(""), new Coord(165, y + 15));
-		    add(new HSlider(160, (int)(cf.anisotex.min() * 2), (int)(cf.anisotex.max() * 2), (int)(cf.anisotex.val * 2)) {
-			    protected void added() {
-				dpy();
-				this.c.y = dpy.c.y + ((dpy.sz.y - this.sz.y) / 2);
-			    }
-			    void dpy() {
-				if(val < 2)
-				    dpy.settext("Off");
-				else
-				    dpy.settext(String.format("%.1f\u00d7", (val / 2.0)));
-			    }
-			    public void changed() {
-				try {
-				    cf.anisotex.set(val / 2.0f);
-				} catch(GLSettings.SettingException e) {
-				    error(e.getMessage());
-				    return;
-				}
-				dpy();
-				cf.dirty = true;
-			    }
-			}, new Coord(0, y + 15));
-		}
-		*/
-		add(new Button(200, "Reset to defaults") {
-			public void click() {
-			    ui.setgprefs(GSettings.defaults());
-			    curcf.destroy();
-			    curcf = null;
-			}
-		    }, new Coord(0, 280));
-		pack();
-	    }
-	}
-
-	private CPanel curcf = null;
-	public void draw(GOut g) {
-	    if((curcf == null) || (ui.gprefs != curcf.prefs)) {
-		if(curcf != null)
-		    curcf.destroy();
-		curcf = add(new CPanel(ui.gprefs), Coord.z);
-	    }
-	    super.draw(g);
-	}
     }
 
     private static final Text kbtt = RichText.render("$col[255,255,0]{Escape}: Cancel input\n" +
@@ -504,8 +442,17 @@ public class OptWnd extends Window {
 	main = add(new Panel());
 	video = add(new VideoPanel(main));
 	audio = add(new Panel());
-	keybind = add(new BindingPanel(main));
 	display = add(new Panel());
+	map = add(new Panel());
+	general = add(new Panel());
+	combat = add(new Panel());
+	control = add(new Panel());
+	mapping = add(new Panel());
+	uis = add(new Panel());
+	quality = add(new Panel());
+	flowermenus = add(new Panel());
+	soundalarms = add(new Panel());
+	keybind = add(new BindingPanel(main));
 	int y;
 
 	main.add(new PButton(200, "Video settings", 'v', video), new Coord(0, 0));
@@ -587,6 +534,12 @@ public class OptWnd extends Window {
 
 	chpanel(main);
     }
+
+	static private Scrollport.Scrollcont withScrollport(Widget widget, Coord sz) {
+		final Scrollport scroll = new Scrollport(sz);
+		widget.add(scroll, new Coord(0, 0));
+		return scroll.cont;
+	}
 
     public OptWnd() {
 	this(true);
