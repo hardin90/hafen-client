@@ -222,7 +222,26 @@ public class Utils {
 	} catch(SecurityException e) {
 	}
     }
-    
+
+	static void setprefchklst(String prefname, Map<String, CheckListboxItem> val) {
+		try {
+			String jsonarr = "";
+			Iterator it = val.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry entry = (Map.Entry)it.next();
+				CheckListboxItem itm = (CheckListboxItem)entry.getValue();
+				if (itm.selected)
+					jsonarr += "\"" + entry.getKey() + "\",";
+			}
+			if (jsonarr.length() > 0)
+				jsonarr = jsonarr.substring(0, jsonarr.length() - 1);
+			Utils.setpref(prefname, "[" + jsonarr + "]");
+		} catch (SecurityException e) {
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+
     static int getprefi(String prefname, int def) {
 	try {
 	    return(prefs().getInt(prefname, def));
@@ -237,6 +256,21 @@ public class Utils {
 	} catch(SecurityException e) {
 	}
     }
+
+	static double getprefd(String prefname, double def) {
+		try {
+			return (prefs().getDouble(prefname, def));
+		} catch (SecurityException e) {
+			return (def);
+		}
+	}
+
+	static void setprefd(String prefname, double val) {
+		try {
+			prefs().putDouble(prefname, val);
+		} catch (SecurityException e) {
+		}
+	}
 
     static boolean getprefb(String prefname, boolean def) {
 	try {
