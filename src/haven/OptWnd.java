@@ -212,15 +212,7 @@ public class OptWnd extends Window {
 				for (CheckListboxItem itm : Config.disableanim.values())
 					disanimlist.items.add(itm);
 				appender.add(disanimlist);
-
-				add(new Button(200, "Reset to defaults") {
-					public void click() {
-						ui.setgprefs(GSettings.defaults());
-						curcf.destroy();
-						curcf = null;
-					}
-				}, new Coord(0, 280));
-
+				
 				pack();
 			}
 		}
